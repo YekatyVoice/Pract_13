@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список дел</title>
+	<meta charset=utf-8" />
+	<link rel = "Stylesheet" href = "1.css">
+	<script src="jquery-3.4.1.min.js" type="text/javascript"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+<div class="header">
+  <h2>Список дел</h2>
+    <ul id="myUL">
+    </ul>
+  <input type="text" id="myInput" placeholder="Новое дело...">
+  <span onclick="newElement()" class="addBtn">+</span>
+</div>
+
+<script>
+	var nextItemId=0;  // next todo item id
+	var currentItemEdit="";
+	var currentItemValue="";
+	var fadeDuration = 500;
+
+	var ToDoList = ["Приготовить завтрак", "Спорт", "Учеба", "Сделать зарядку"];
+	for (i = 0; i < ToDoList.length; i++) {
+		newTodoItem(ToDoList[i]);
+	}
+
+	function makeToDoItemId() {
+		return "ToDoItem_" + nextItemId++;
+	}
+
+	function createToDoText(ToDoText) {
+			var span = document.createElement("SPAN");
+			var txt = document.createTextNode(ToDoText);
+			span.appendChild(txt);
+
+			span.ondblclick =  function () {
+				var thisData = this.innerHTML,
+				$el = $('<input type="text" class="in-edit-text" onkeyup="myEditFunction(event)"/>');
+				currentItemEdit = this.id;
+				currentItemValue = this.innerText;
+
+				$(this).fadeToggle(fadeDuration, "linear", function(){
+					$(this).replaceWith($el);
+					$el.val(thisData).focus();
+				});
+			};
+			return span;
+	}
+
+	function fadeOutEditor(span) {
+		return new Promise(function(resolve, reject) {
+			$('.in-edit-text').fadeToggle(fadeDuration, "linear", ()=>{resolve(span)});
+		})
+	}
+	function myEditFunction(event){
+		var x = event.key;
+		var span=null;
+		if (x ==  "Enter") {
+			var txt = $('.in-edit-text').val();
+			if(txt == "") // restore old value if new is empty
+				span = createToDoText(currentItemValue);
+			else
+			span = createToDoText(txt);
+		}
+		else if (x == "Escape") {
+			span = createToDoText(currentItemValue);
+		}
+
+		if(span)
+		{
+			fadeOutEditor(span).then(
+				span => $('.in-edit-text').replaceWith(span)
+				);
+		}
+	}
+
+	function newTodoItem(todoText) {
+	  var li = document.createElement("li");
+	  var span;
+
+	  span = document.createElement("SPAN");
+	  txt = document.createTextNode("✔️");
+	  span.className = "flag";
+
+	  span.onclick = function() {
+		var div = this.parentElement;
+		var txt = div.children[1];
+		if(txt.style.textDecoration == "line-through")
+		{
+			txt.style.textDecoration = "";
+			txt.style.background = "white";
+		}
+		else
+		{
+			txt.style.textDecoration = "line-through";
+			txt.style.background = "lightgrey";
+		}
+	  };
+	  span.appendChild(txt);
+	  li.appendChild(span);
+
+	   // create text node
+	   span = createToDoText(todoText, li);
+	  li.appendChild(span);
+	  document.getElementById("myUL").appendChild(li);
+	}
+
+	function newElement() {
+	 var edit = document.getElementById("myInput");
+	 var inputValue = edit.value;
+	  if (inputValue === '') {
+		return;
+	  }
+	  newTodoItem(inputValue);
+	  edit.value="";
+	}
+</script>
+</body>
+</html>
